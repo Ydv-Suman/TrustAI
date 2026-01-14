@@ -3,6 +3,7 @@ uvicorn
 pydantic
 python-multipart
 faiss-cpu
+rank_bm25
 langchain-openai
 langchain-huggingface
 langchain-community

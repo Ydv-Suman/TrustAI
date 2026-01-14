@@ -1,6 +1,7 @@
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_core.documents import Document
+from langchain_community.retrievers import BM25Retriever
+from langchain_classic.retrievers import EnsembleRetriever
 from typing import List
 import numpy as np
 
@@ -28,10 +29,18 @@ def embedded_text(texts: List[str]) -> np.ndarray:
 
 # Create FAISS vector store from document chunks
 # This loads the chunks created by the chunking module and builds a searchable index
-vectorstore = FAISS.from_documents(
-    documents=chunks,
-    embedding=embeddings
+dense_vectorstore = FAISS.from_documents(chunks, embeddings)
+dense_retriever = dense_vectorstore.as_retriever()
+
+sparse_retriever = BM25Retriever.from_documents(chunks)
+sparse_retriever.k = 3
+
+hybrid_retriever = EnsembleRetriever(
+    retrievers=[dense_retriever, sparse_retriever],
+    weight=[0.7,0.3]
 )
+
+hybrid_retriever
 
 
 def deduplicate_results(results):
@@ -50,7 +59,7 @@ def deduplicate_results(results):
 
 
 query = str(input("Enter your query: "))
-responses = vectorstore.similarity_search(query, k=10)
+responses = hybrid_retriever.invoke(query, k=10)
 
 print(f"\nQuery: {query}")
 print(f"Results before deduplication: {len(responses)}")

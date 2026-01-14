@@ -74,7 +74,7 @@ def create_sentence_based_chunks(
     return all_chunks
 
 
-file = "data/large_llm_hallucination_document.pdf"
+file = "../data/large_llm_hallucination_document.pdf"
 print(f"Loading document from: {file}")
 cleaned_text = load_document(file=file)
 
