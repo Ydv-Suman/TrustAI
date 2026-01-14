@@ -5,7 +5,6 @@ from typing import List
 from loader import load_document
 
 def split_into_sentences(text: str) -> List[str]:
-    """Split text into sentences using regex pattern."""
     # Pattern to match sentence endings (. ! ?) followed by space or end of string
     sentence_pattern = r'(?<=[.!?])\s+'
     sentences = re.split(sentence_pattern, text.strip())
@@ -19,19 +18,7 @@ def create_sentence_based_chunks(
     chunk_overlap: int = 40,
     min_chunk_size: int = 100
 ) -> List:
-    """
-    Create chunks based on sentences, allowing variable chunk sizes.
-    
-    Args:
-        documents: List of Document objects
-        target_chunk_size: Target size for chunks (approximate)
-        chunk_overlap: Number of characters to overlap between chunks
-        min_chunk_size: Minimum chunk size to ensure meaningful chunks
-        
-    Returns:
-        List of Document chunks with variable sizes based on sentence lengths
-    """
-    
+    """Create sentence-based chunks from documents with variable chunk sizes."""
     all_chunks = []
     
     for doc in documents:
@@ -87,29 +74,18 @@ def create_sentence_based_chunks(
     return all_chunks
 
 
-document_file = "data/large_llm_hallucination_document.pdf"
-print(f"Loading document from: {document_file}")
-cleaned_text = load_document(document_file=document_file)
+file = "data/large_llm_hallucination_document.pdf"
+print(f"Loading document from: {file}")
+cleaned_text = load_document(file=file)
 
 # Convert cleaned text to Document object
 document = Document(
     page_content=cleaned_text,
-    metadata={"source": document_file}
+    metadata={"source": file}
 )
 
 # Create chunks
 print("Creating sentence-based chunks...")
 chunks = create_sentence_based_chunks(
-    documents=[document],
-    target_chunk_size=400,
-    chunk_overlap=40,
-    min_chunk_size=100
+    documents=[document]
 )
-
-# Display results
-print(f"\nTotal chunks created: {len(chunks)}")
-print("\nChunk details:")
-for i, chunk in enumerate(chunks):
-    print(f"\nChunk {i + 1} (Index: {chunk.metadata.get('chunk_index', i)}):")
-    print(f"  Length: {len(chunk.page_content)} characters")
-    print(f"  Preview: {chunk.page_content}")
