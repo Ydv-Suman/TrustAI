@@ -59,15 +59,15 @@ def deduplicate_results(results):
 
 
 query = str(input("Enter your query: "))
-responses = hybrid_retriever.invoke(query, k=10)
+retrieval_responses = hybrid_retriever.invoke(query, k=10)
 
 print(f"\nQuery: {query}")
-print(f"Results before deduplication: {len(responses)}")
+print(f"Results before deduplication: {len(retrieval_responses)}")
 
-unique_responses = deduplicate_results(responses)
-print(f"Number of unique matches after deduplication: {len(unique_responses)}\n")
+unique_retrieval_responses = deduplicate_results(retrieval_responses)
+print(f"Number of unique matches after deduplication: {len(unique_retrieval_responses)}\n")
 
-for idx, response in enumerate(unique_responses, start=1):
+for idx, response in enumerate(unique_retrieval_responses, start=1):
     print(f"Match {idx}:")
-    print(f"Content: {response.page_content}")
+    print(f"Content `vector_index response`: {response.page_content}")
     print(f"Metadata: {response.metadata}\n")

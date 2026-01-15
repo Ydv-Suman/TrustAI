@@ -6,7 +6,7 @@ from langchain_classic.chains.retrieval import create_retrieval_chain
 import os
 from dotenv import load_dotenv
 
-from vector_index import hybrid_retriever
+from vector_index import hybrid_retriever, query
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
@@ -52,8 +52,8 @@ def build_rag_chain(vectorstore):
 
 
 rag_chain = build_rag_chain(hybrid_retriever)
-response = rag_chain.invoke({
-    "input": input("Enter your query: ")
+llm_response = rag_chain.invoke({
+    "input": query
 })
 
-print(response["answer"])
+print(f"llm_response: {llm_response["answer"]}")
