@@ -8,10 +8,6 @@ from transformers import AutoModelForSequenceClassification
 from transformers import AutoTokenizer
 import torch
 
-
-from vector_index import retrieval_responses
-from llm import llm_response
-
 class RetrievalOverlapScorer:
     def __init__(self, model_name="sentence-transformers/all-MiniLM-L6-v2"):
         self.model = SentenceTransformer(model_name)
@@ -39,16 +35,6 @@ class RetrievalOverlapScorer:
         return [s.strip() for s in text.split(".") if s.strip()]
 
 
-retreival_scorer = RetrievalOverlapScorer()
-
-retreival_score = retreival_scorer.score(
-    llm_response=llm_response["answer"],
-    evidence_chunks=[doc.page_content for doc in retrieval_responses]
-)
-
-print("Retrieval overlap:", retreival_score)
-
-
 class SemanticSimilarityScorer:
     def __init__(self, model_name="sentence-transformers/all-MiniLM-L6-v2"):
         self.model = SentenceTransformer(model_name)
@@ -67,16 +53,6 @@ class SemanticSimilarityScorer:
 
         # Use max or mean (max is safer for RAG)
         return float(similarities.max())
-
-semantic_scorer = SemanticSimilarityScorer()
-
-semantic_score = semantic_scorer.score(
-    llm_response=llm_response["answer"],
-    evidence_chunks=[doc.page_content for doc in retrieval_responses]
-)
-
-print("semantic_score:", semantic_score)
-
 
 # Suppress the warning about unused weights
 transformers.logging.set_verbosity_error()
@@ -160,21 +136,30 @@ class NLIScorer:
         }
 
 
-NLIScorer = NLIScorer()
-
-NLI_Score = NLIScorer.score(
-    llm_response=llm_response["answer"],
-    evidence_chunks=[doc.page_content for doc in retrieval_responses]
-)
-
-print("NLI Score:")
-print(f"  Contradiction Risk: {NLI_Score['contradiction_risk']:.4f}")
-print(f"  Neutral Score: {NLI_Score['neutral_score']:.4f}")
-print(f"  Entailment Score: {NLI_Score['entailment_score']:.4f}")
-
-trust_score = (
-    0.4 * retreival_score +
-    0.4 * semantic_score +
-    0.2 * (1 - NLI_Score['contradiction_risk'])
-) * 100
-print(f"Trust score: {trust_score}")
+def calculate_all_scores(llm_answer: str, evidence_chunks: List[str]) -> dict:
+    """Calculate all trust scores and return comprehensive scoring results."""
+    retrieval_scorer = RetrievalOverlapScorer()
+    semantic_scorer = SemanticSimilarityScorer()
+    nli_scorer = NLIScorer()
+    
+    retrieval_score = retrieval_scorer.score(llm_answer, evidence_chunks)
+    semantic_score = semantic_scorer.score(llm_answer, evidence_chunks)
+    nli_scores = nli_scorer.score(llm_answer, evidence_chunks)
+    
+    # Calculate overall trust score (weighted combination)
+    trust_score = (
+        0.4 * retrieval_score +
+        0.4 * semantic_score +
+        0.2 * (1 - nli_scores['contradiction_risk'])
+    ) * 100
+    
+    return {
+        "retrieval_overlap": retrieval_score,
+        "semantic_similarity": semantic_score,
+        "nli": {
+            "contradiction_risk": nli_scores['contradiction_risk'],
+            "neutral_score": nli_scores['neutral_score'],
+            "entailment_score": nli_scores['entailment_score']
+        },
+        "trust_score": trust_score
+    }

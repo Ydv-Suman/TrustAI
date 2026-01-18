@@ -1,8 +1,7 @@
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 import re
 from typing import List
-from loader import load_document
+from ai.loader import load_document
 
 def split_into_sentences(text: str) -> List[str]:
     # Pattern to match sentence endings (. ! ?) followed by space or end of string
@@ -74,18 +73,11 @@ def create_sentence_based_chunks(
     return all_chunks
 
 
-file = "../data/large_llm_hallucination_document.pdf"
-print(f"Loading document from: {file}")
-cleaned_text = load_document(file=file)
-
-# Convert cleaned text to Document object
-document = Document(
-    page_content=cleaned_text,
-    metadata={"source": file}
-)
-
-# Create chunks
-print("Creating sentence-based chunks...")
-chunks = create_sentence_based_chunks(
-    documents=[document]
-)
+def process_document_to_chunks(document_text: str) -> List[Document]:
+    """Process document text into chunks ready for retrieval."""
+    document = Document(
+        page_content=document_text,
+        metadata={"source": "uploaded_document"}
+    )
+    chunks = create_sentence_based_chunks(documents=[document])
+    return chunks

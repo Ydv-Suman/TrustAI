@@ -6,10 +6,7 @@ from langchain_classic.chains.retrieval import create_retrieval_chain
 import os
 from dotenv import load_dotenv
 
-from vector_index import hybrid_retriever, query
-
 load_dotenv()
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 SYSTEM_PROMPT = """
 You are an assistant answering questions strictly based on the provided evidence.
@@ -27,7 +24,10 @@ Answer:
 """
 
 
-def build_rag_chain(vectorstore):
+def build_rag_chain(hybrid_retriever):
+    """Build a RAG chain with the given hybrid retriever."""
+    os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+    
     llm = ChatOpenAI(
         model="gpt-3.5-turbo",
         temperature=0.0
@@ -51,9 +51,8 @@ def build_rag_chain(vectorstore):
     return rag_chain
 
 
-rag_chain = build_rag_chain(hybrid_retriever)
-llm_response = rag_chain.invoke({
-    "input": query
-})
-
-print(f"llm_response: {llm_response["answer"]}")
+def get_llm_response(hybrid_retriever, query: str):
+    """Get LLM response using RAG chain."""
+    rag_chain = build_rag_chain(hybrid_retriever)
+    llm_response = rag_chain.invoke({"input": query})
+    return llm_response

@@ -1,4 +1,5 @@
 from typing import Optional, BinaryIO
+from pathlib import Path
 from pypdf import PdfReader
 
 
@@ -35,6 +36,16 @@ def load_document(
             raise ValueError(f"Failed to load PDF: {e}")
 
     raise ValueError("No document text or PDF file provided.")
+
+
+def load_document_from_path(file_path: str) -> str:
+    """Load document text from a file path."""
+    path = Path(file_path)
+    if not path.exists():
+        raise ValueError(f"File not found: {file_path}")
+    
+    with open(path, 'rb') as f:
+        return load_document(file=f)
 
 
 def _normalize_text(text: str) -> str:
