@@ -62,6 +62,15 @@ TrustAI/
 └── README.md                     # This file
 ```
 
+## Docker Images
+
+Pull the pre-built Docker images:
+
+```bash
+docker pull sumanydv/trustai-backend
+docker pull sumanydv/trustai-frontend
+```
+
 ## How It Works
 
 1. **Document Upload**: User uploads a PDF document that serves as the knowledge source
