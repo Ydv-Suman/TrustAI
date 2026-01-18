@@ -1,6 +1,7 @@
 from typing import Optional
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from ai.loader import load_document_from_path
 from ai.chunking import process_document_to_chunks
@@ -9,12 +10,24 @@ from ai.vector_index import create_hybrid_retriever, get_unique_retrieval_respon
 from ai.llm import get_llm_response
 from explain import classify_risk, explain_trust
 
+import os
 from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = FastAPI()
+
+origins=os.getenv('ORIGINS')
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins.split(",") if origins else ["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Directory to store uploaded files
 UPLOADS_DIR = Path(__file__).parent / "uploads"
